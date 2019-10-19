@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from keras import backend as K
 from keras.engine import InputSpec
-from keras.layers import Wrapper, Merge
+from keras.layers import Wrapper, Add
 
 
 class Residual(Wrapper):
@@ -42,15 +42,13 @@ class Residual(Wrapper):
 
     Arguments:
         layer: The layer to wrap
-        merge_mode: The merge operation
     """
-    def __init__(self, layer, merge_mode='sum', **kwargs):
-        self.merge_mode = merge_mode
+    def __init__(self, layer, **kwargs):
         self.supports_masking = True
         super(Residual, self).__init__(layer, **kwargs)
 
     def build(self, input_shape):
-        output_shape = self.layer.get_output_shape_for(input_shape)
+        output_shape = self.layer.compute_output_shape(input_shape)
         if output_shape != input_shape:
             raise Exception('Cannot apply residual to layer "{}": '
                             'mismatching input and output shapes'
@@ -59,6 +57,7 @@ class Residual(Wrapper):
         if not self.layer.built:
             self.layer.build(input_shape)
             self.layer.built = True
+            self.add = Add()
         self.input_spec = [InputSpec(shape=input_shape)]
         super(Residual, self).build()
 
@@ -66,23 +65,15 @@ class Residual(Wrapper):
         return input_shape
 
     def call(self, x, mask=None):
-        layer_output = self.layer.call(x, mask)
-        if isinstance(self.merge_mode, str):
-            self.merge_mode = Merge(mode=self.merge_mode)
-        output = self.merge_mode([x, layer_output])
+        layer_output = self.layer.call(x)
+        output = self.add([x, layer_output])
         return output
-    
+
     @classmethod
     def from_config(cls, config):
-        from keras.utils.layer_utils import layer_from_config
-        merge_mode = layer_from_config(config.pop('merge_mode'))
         residual = super(Residual, cls).from_config(config)
-        residual.merge_mode = merge_mode
         return residual
-    
-    def get_config(self):
-        config = {"merge_mode": {'class_name': 'Merge',
-                                 'config': self.merge_mode.get_config()}}
-        base_config = super(Residual, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
 
+    def get_config(self):
+        base_config = super(Residual, self).get_config()
+        return dict(list(base_config.items()))

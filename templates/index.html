@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Saito web</title>
+    <!--./static/-->
+    <link rel="stylesheet" href="static/stylesheet.css">
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="header-img">
+            <a class="header-icon fab fa-angellist fa-3x"></a>
+        </div>
+        <a class="header-logo" href="#">Number Classifier</a>
+    </header>
+    ​
+    <div class="main">
+        <h2>AIが送信された画像の数字を識別します</h2>
+        <p>画像を送信してください</p>
+        <form method="POST" enctype="multipart/form-data">
+            <label class="upload-img">
+                画像を選択する
+                <input class="file_choose" type="file" name="file">
+            </label>
+            ​
+            <input class="btn-img btn" value="識別する" type="submit">
+        </form>
+        <div class="answer">{{answer}}</div>
+    </div>
+    ​
+    <footer>
+        <a class="footer-logo" href="#">Number Classifier</a>
+    </footer>
+</body>
+
+</html>
